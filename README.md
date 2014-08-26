@@ -1,4 +1,6 @@
 oojs-utility
 ============
+oojs 工具库.
 
-oojs utility library
+具体文档参见:
+./doc/index.html

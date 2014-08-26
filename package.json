@@ -1,7 +1,7 @@
 {
     "name": "node-oojs-utility",
-    "description": "node-oojs utility lib",
-    "homepage": "https://github.com/zhangziqiu/oojs",
+    "description": "node-oojs utility library",
+    "homepage": "https://www.develop.cc",
     "main": "./src/main.js",
     "version": "1.0.9",
     "engines": {
@@ -10,11 +10,11 @@
     "maintainers": [{
         "name": "zhangziqiu",
         "email": "zhangziqiu@qq.com",
-        "web": "https://github.com/zhangziqiu/oojs"
+        "web": "https://github.com/zhangziqiu/oojs-utility"
     }],
     "repository": {
         "type": "git",
-        "url": "https://github.com/zhangziqiu/oojs.git"
+        "url": "https://github.com/zhangziqiu/oojs-utility.git"
     },
     "dependencies": {
 		"node-oojs": "*"
