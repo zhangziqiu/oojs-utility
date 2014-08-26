@@ -1,0 +1,22 @@
+{
+    "name": "node-oojs-utility",
+    "description": "node-oojs utility lib",
+    "homepage": "https://github.com/zhangziqiu/oojs",
+    "main": "./src/main.js",
+    "version": "1.0.9",
+    "engines": {
+        "node": ">=0.4.0"
+    },
+    "maintainers": [{
+        "name": "zhangziqiu",
+        "email": "zhangziqiu@qq.com",
+        "web": "https://github.com/zhangziqiu/oojs"
+    }],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/zhangziqiu/oojs.git"
+    },
+    "dependencies": {
+		"node-oojs": "*"
+    }
+}
