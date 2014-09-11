@@ -1,25 +1,74 @@
 require('node-oojs');
 
+/**
+@class fileSync
+@classdesc 文件操作同步类. 提供node缺失的目录递归创建和目录copy功能.
+@example
+
+//引入oojs和oojs-utility
+require('node-oojs');
+require('node-oojs-utility');
+
+//创建类引用. fileSync类都是静态方法所以不需要创建实例. 直接通过类调用即可.
+var fileSync = oojs.using('oojs.utility.fileSync');
+
+//拷贝文件夹, 如果目标文件夹不存在, 会自动递归创建目标文件夹
+fileSync.copyDirectorySync('./a', './b/c/d/e');
+
+//拷贝的时候, 可以使用filter, 比如下面的例子过滤掉所有"."开头的文件(svn相关文件都是以'.'开头的):
+fileSync.copyDirectorySync('./a', './b/c/d/e', function(fileName, filePath){
+    if (fileName.indexOf('.') === 0) {
+        return false;
+    }
+    return true;
+});
+
+
+//获取某一个文件夹下面所有的文件. 返回的是一个数组, 里面包含的是一个文件的完整磁盘路径
+fileSync.getFileListSync('./a');
+
+//同样可以使用filter过滤:
+fileSync.getFileListSync('./a', function(fileName, filePath){
+    if (fileName.indexOf('.') === 0) {
+        return false;
+    }
+    return true;
+});
+
+
+
+
+*/
 define && define({
     name: 'fileSync',
-	namespace: 'oojs.utility',
-	/**
-	@constructs fileSync
-	*/
+    namespace: 'oojs.utility',
     $fileSync: function () {
-		this.fs = require('fs');
-        this.path = require('path');
+        this.fs = require('fs');
+        this.path = require('path');        
     },
 
-	/**
-	拷贝目录, 会自动递归创建目标文件夹
-	@function fileSync.copyDirectorySync
-	@static
-	@param {string} sourceDirPath 源文件夹
-	@param {string} toDirPath 目标文件夹
-	@param {function} filter 过滤器,签名为filter(fileName, filePath), 其中fileName为文件名, filePath为文件路径. 
-	可以根据fileName和filePath判断当前文件是否需要被过滤.返回false则表示过滤当前文件或文件夹.
-	*/
+    /**
+    读取一个文件, 默认为utf8编码.
+    @function fileSync.readFileSync
+    @static
+    @param {string} sourceDirPath 待读取的文件路径.
+    @param {Object} option 设置项. 目前仅支持option.encoding参数.默认为utf8编码.
+    @return {string} 文件内容
+    */
+    readFileSync: function (sourceDirPath, option) {
+        var encoding = option && option.encoding ? option.encoding : 'utf8'
+        return this.fs.readFileSync(sourceDirPath, encoding);
+    },
+
+    /**
+    拷贝目录, 会自动递归创建目标文件夹
+    @function fileSync.copyDirectorySync
+    @static
+    @param {string} sourceDirPath 源文件夹
+    @param {string} toDirPath 目标文件夹
+    @param {function} filter 过滤器,签名为filter(fileName, filePath), 其中fileName为文件名, filePath为文件路径. 
+    可以根据fileName和filePath判断当前文件是否需要被过滤.返回false则表示过滤当前文件或文件夹.
+    */
     copyDirectorySync: function (sourceDirPath, toDirPath, filter) {
 
         sourceDirPath = this.path.resolve(sourceDirPath);
@@ -39,13 +88,13 @@ define && define({
         return this;
     },
 
-	/**
-	拷贝文件, 会自动递归创建目标文件夹
-	@function fileSync.copyFileSync
-	@static
-	@param {string} sourceFilePath 源文件
-	@param {string} toFilePath 目标文件
-	*/
+    /**
+    拷贝文件, 会自动递归创建目标文件夹
+    @function fileSync.copyFileSync
+    @static
+    @param {string} sourceFilePath 源文件
+    @param {string} toFilePath 目标文件
+    */
     copyFileSync: function (sourceFilePath, toFilePath) {
         var dirPath = this.path.dirname(toFilePath);
         this.mkdirSync(dirPath);
@@ -54,13 +103,13 @@ define && define({
         return this;
     },
 
-	/**
-	创建文件夹, 会自动递归创建目标文件夹
-	@function fileSync.mkdirSync
-	@static
-	@param {string} filePath 目标文件夹
-	@param {number} mode 创建的文件夹的权限, 比如: 0755, 默认为 0777
-	*/
+    /**
+    创建文件夹, 会自动递归创建目标文件夹
+    @function fileSync.mkdirSync
+    @static
+    @param {string} filePath 目标文件夹
+    @param {number} mode 创建的文件夹的权限, 比如: 0755, 默认为 0777
+    */
     mkdirSync: function (filePath, mode) {
         var filePath = this.path.resolve(filePath);
         mode = mode || 0777;
@@ -103,14 +152,14 @@ define && define({
         return this;
     },
 
-	/**
-	获取一个目录中所有的文件
-	@function fileSync.getFileListSync
-	@static
-	@param {string} filePath 目标文件夹
-	@param {function} filter 过滤器,签名为filter(fileName, filePath), 其中fileName为文件名, filePath为文件路径. 
-	可以根据fileName和filePath判断当前文件是否需要被过滤.返回false则表示过滤当前文件或文件夹.
-	*/
+    /**
+    获取一个目录中所有的文件
+    @function fileSync.getFileListSync
+    @static
+    @param {string} filePath 目标文件夹
+    @param {function} filter 过滤器,签名为filter(fileName, filePath), 其中fileName为文件名, filePath为文件路径. 
+    可以根据fileName和filePath判断当前文件是否需要被过滤.返回false则表示过滤当前文件或文件夹.
+    */
     getFileListSync: function (filePath, filter) {
         var result = [];
         filePath = filePath || './'; //默认为当前目录
