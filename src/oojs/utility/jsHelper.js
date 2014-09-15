@@ -28,5 +28,5 @@ define && define({
         ast.print(formatStream);
         result = formatStream.toString();
         return result;
-    } 
+    }
 });
