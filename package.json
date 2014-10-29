@@ -2,15 +2,14 @@
     "name": "node-oojs-utility",
     "description": "oojs utility library",
     "homepage": "https://www.develop.cc",
-    "main": "./src/main.js",
-    "version": "1.0.14",
+    "main": "./src/module.js",
+    "version": "1.0.15",
     "engines": {
         "node": ">=0.4.0"
     },
     "maintainers": [{
         "name": "zhangziqiu",
-        "email": "zhangziqiu@qq.com",
-        "web": "https://github.com/zhangziqiu/oojs-utility"
+        "email": "zhangziqiu@qq.com"
     }],
     "repository": {
         "type": "git",
