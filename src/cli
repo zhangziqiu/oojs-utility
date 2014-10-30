@@ -1,0 +1,23 @@
+#! /usr/bin/env node
+require('node-oojs');
+require('./module.js');
+
+define && define({
+    name:'cli',
+    deps: {
+        command: 'oojs.utility.command'
+    },
+    $cli: function(){
+        //使用command类处理命令行输入
+        var result = this.command.getCommand();
+        var commandArray = result.command;
+        var optionObj = result.option;        
+        
+        //获取并运行子命令
+        var subCommandName;
+        subCommandName = commandArray[0]==='node'? commandArray[2] : commandArray[1];
+        var subCommandClass = oojs.using('oojs.command.'+subCommandName);
+        var subCommand = oojs.create(subCommandClass, optionObj);
+        subCommand.run();
+    }
+});

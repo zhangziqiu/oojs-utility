@@ -1,9 +1,9 @@
 {
     "name": "node-oojs-utility",
     "description": "oojs utility library",
-    "homepage": "https://www.develop.cc",
+    "homepage": "http://www.develop.cc",
     "main": "./src/module.js",
-    "version": "1.0.15",
+    "version": "1.0.19",
     "engines": {
         "node": ">=0.4.0"
     },
@@ -17,6 +17,10 @@
     },
     "dependencies": {
         "node-oojs": "*",
-        "uglify-js": "*"
+        "uglify-js": "*",
+        "clean-css": "*"
+    },
+    "bin": {
+        "oojs": "./src/cli"
     }
 }
