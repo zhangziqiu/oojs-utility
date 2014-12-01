@@ -188,6 +188,41 @@ define && define({
         }
 
         return result;
-    }
+    },
+    
+    /**
+    获取一个目录中所有的目录
+    @function fileSync.getDirectoryListSync
+    @static
+    @param {string} filePath 目标文件夹
+    @param {function} filter 过滤器,签名为filter(fileName, filePath), 其中fileName为文件名, filePath为文件路径. 
+    可以根据fileName和filePath判断当前文件是否需要被过滤.返回false则表示过滤当前文件或文件夹.
+    */
+    getDirectoryListSync: function (filePath, filter) {
+        var result = [];
+        filePath = filePath || './'; //默认为当前目录
+        var basePath = this.path.resolve(filePath);
+        var basePathFiles = this.fs.readdirSync(basePath);
 
+        //开始遍历文件名
+        for (var i = 0, count = basePathFiles.length; i < count; i++) {
+            var fileName = basePathFiles[i];
+            var filePath = basePath + '/' + fileName;
+            var fileStat = this.fs.statSync(filePath);
+
+            if (filter && !filter(fileName, filePath)) {
+                continue;
+            }
+
+            //处理文件夹
+            if (fileStat.isDirectory()) {
+                result.push(filePath);
+                result = result.concat(this.getDirectoryListSync(filePath, filter));
+            }
+        }
+
+        return result;
+    }
 });
+
+
