@@ -77,6 +77,68 @@ define && define({
         this.prepareDepsArray = [];
     },
 
+    /**
+     * 分析指定路径文件的deps
+     **/
+    analyzeDeps: function (path) {
+        // 分析单个类文件中的依赖
+        var depsList = [];
+        var ujs = require('uglify-js');
+        var fs = require('fs');
+        var code = fs.readFileSync(path, 'utf-8');
+        var ast = ujs.parse(code);
+        ast.figure_out_scope();
+        ast.walk(new ujs.TreeWalker(function (node) {
+            if (node instanceof ujs.AST_Call 
+                && node.expression.property === 'define'
+                && node.args.length === 1
+                && node.args[0] instanceof ujs.AST_Object
+            ) {
+                var pList = node.args[0].properties;
+                for (var i = 0, len = pList.length; i < len; i++) {
+                    var pNode = pList[i];
+                    if (pNode instanceof ujs.AST_ObjectProperty
+                        && pNode.key === 'deps'
+                    ) {
+                        var depsClassList = pNode.value.properties;
+                        var count = depsClassList.length;
+                        for (var j = 0; j < count; j++) {
+                            var objectPropertyNode = depsClassList[j];
+                            if (objectPropertyNode instanceof ujs.AST_ObjectProperty) {
+                                var depsClassFullName = objectPropertyNode.value.value;
+                                depsList.push(depsClassFullName);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }));
+
+        return depsList;
+    },
+
+    /**
+     * 递归加载所有的类的依赖，拍平存储
+     *
+     **/
+    loadAllDeps: function (depsList, depsRecordMap) {
+        depsRecordMap = depsRecordMap || {};
+        for (var i = 0, count = depsList.length; i < count; i++) {
+            var depsClassFullName = depsList[i];
+            if (!depsRecordMap.hasOwnProperty(depsClassFullName)) {
+                var depsClassFilePath = oojs.getClassPath(depsClassFullName);
+                var subDepsList = this.analyzeDeps(depsClassFilePath);
+                
+                this.loadAllDeps(subDepsList, depsRecordMap);
+
+                depsRecordMap[depsClassFullName] = true;
+            }
+        }
+
+        return depsRecordMap;
+    },
+
     /*
     "build": {
         unionInlay: {
@@ -133,6 +195,10 @@ define && define({
             var result = [];
             var importFilePath = arguments[1];
             importFilePath = importFilePath.replace(/\'/gi, "").replace(/\"/gi, "");
+
+            var allDepsMap = this.loadAllDeps([importFilePath]);
+            console.log(allDepsMap);
+            return;
             try {
                 var classObj = oojs.using(importFilePath);
             }
