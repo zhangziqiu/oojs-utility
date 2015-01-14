@@ -25,63 +25,10 @@ define && define({
     //待加载的依赖类集合
     prepareDepsArray: [],
 
-    getClassName: function (classObj) {
-        this.recording = {};
-        this.classNameArray = [];
-        this.prepareloadArray = [];
-        this.prepareDepsArray = [];
-
-        //将起点类放入待加载数组中
-        this.prepareloadArray.push(classObj);
-        //待加载数据为空时终止
-        while (this.prepareloadArray && this.prepareloadArray.length > 0) {
-            this.loadClassName();
-        }
-        return this.classNameArray;
-    },
-
-    loadClassName: function () {
-        var count = this.prepareloadArray.legnth;
-        for (var i = 0, count = this.prepareloadArray.length; i < count; i++) {
-            var classObj = this.prepareloadArray.shift();
-            //获取类名
-            var className = classObj.name;
-            var classFullName = classObj.namespace ? classObj.namespace + "." : "";
-            classFullName = classFullName + className;
-            //类没有被遍历过
-
-            if (!this.recording[classFullName]) {
-                this.recording[classFullName] = true;
-                this.classNameArray.push(classFullName);
-
-                //获取依赖类
-                var deps = classObj.deps || {};
-
-                //遍历每一个依赖类
-                for (var key in deps) {
-                    if (key && deps.hasOwnProperty(key)) {
-                        var depClassFullName = deps[key];
-
-                        //类没有被遍历过
-                        if (!this.recording[depClassFullName]) {
-                            var tempClassObj = oojs.using(depClassFullName);
-                            this.prepareDepsArray.push(tempClassObj);
-                        }
-
-                    }
-                }
-            }
-        }
-
-        this.prepareloadArray = this.prepareDepsArray;
-        this.prepareDepsArray = [];
-    },
-
     /**
      * 分析指定路径文件的deps
      **/
     analyzeDeps: function (path) {
-        // 分析单个类文件中的依赖
         var depsList = [];
         var ujs = require('uglify-js');
         var fs = require('fs');
@@ -115,28 +62,33 @@ define && define({
             }
         }));
 
-        return depsList;
+        return { 
+            deps: depsList, 
+            code: code
+        };
     },
 
     /**
-     * 递归加载所有的类的依赖，拍平存储
+     * 递归加载所有的类的依赖
      *
+     * @return {Array} depsRecordList 按依赖顺序加载的代码数组
      **/
-    loadAllDeps: function (depsList, depsRecordMap) {
+    loadAllDeps: function (depsList, depsRecordMap, depsRecordList) {
         depsRecordMap = depsRecordMap || {};
+        depsRecordList = depsRecordList || [];
         for (var i = 0, count = depsList.length; i < count; i++) {
             var depsClassFullName = depsList[i];
             if (!depsRecordMap.hasOwnProperty(depsClassFullName)) {
                 var depsClassFilePath = oojs.getClassPath(depsClassFullName);
-                var subDepsList = this.analyzeDeps(depsClassFilePath);
+                var classData = this.analyzeDeps(depsClassFilePath);
                 
-                this.loadAllDeps(subDepsList, depsRecordMap);
-
                 depsRecordMap[depsClassFullName] = true;
+                depsRecordList.push(classData.code);
+                this.loadAllDeps(classData.deps, depsRecordMap, depsRecordList);
             }
         }
 
-        return depsRecordMap;
+        return depsRecordList;
     },
 
     /*
@@ -172,7 +124,7 @@ define && define({
         var importWithDepsRegexp = /\$importAll\((\S+)\)\s*;/gi;
         var importMatch;
 
-        //处理import命令, 只引用当前类
+        // 处理import命令, 只引用当前类
         var sourceFileString = templateSource.replace(importRegexp, function () {
             var result = "";
             var importFilePath = arguments[1];
@@ -190,30 +142,17 @@ define && define({
             return result;
         }.proxy(this));
 
-        //处理importWithDeps命令, 加载当前类以及所有依赖的类
+        // 处理importWithDeps命令, 加载当前类以及所有依赖的类
         sourceFileString = sourceFileString.replace(importWithDepsRegexp, function () {
             var result = [];
             var importFilePath = arguments[1];
             importFilePath = importFilePath.replace(/\'/gi, "").replace(/\"/gi, "");
 
-            var allDepsMap = this.loadAllDeps([importFilePath]);
-            console.log(allDepsMap);
-            return;
-            try {
-                var classObj = oojs.using(importFilePath);
-            }
-            catch (ex) {
-                var classObj = oojs.using(importFilePath);
-            }
-            var classNameArray = this.getClassName(classObj);
+            var allDepsList = this.loadAllDeps([importFilePath]);
+            // 倒序一下，让被依赖的文件尽量前置
+            allDepsList.reverse();
 
-            for (var i = 0, count = classNameArray.length; i < count; i++) {
-                var tempClassName = classNameArray.pop();
-                var tempClassFilePath = oojs.getClassPath(tempClassName);
-                result.push(this.fileSync.readFileSync(tempClassFilePath));
-            }
-
-            return result.join("");
+            return allDepsList.join("");
         }.proxy(this));
 
 
