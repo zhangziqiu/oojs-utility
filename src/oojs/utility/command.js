@@ -9,10 +9,16 @@ define && define({
     @param {Array} args 包含option的array对象
     @return {Object} 一个对象, command属性为命令数组, option属性为参数的mapping对象.
     */
-    getCommand: function (args) {
+    getCommand: function (option) {
         var commandArray = [];
+        option = option || {};
+        //命令深度, 即支持几级命令. 
+        //比如二级命令: oojs smart a.js, 其中oojs是一级命令, smart是二级命令, a.js是参数而不是命令.
+        //a.js会保存到option.values中
+        option.commandDepth = option.commandDepth || 1;
+        
         //所有的参数
-        args = args || process.argv;
+        args = option.args || process.argv;
         //选项参数
         var optionArray = args.concat();
 
@@ -20,11 +26,26 @@ define && define({
             if (!args[i] || args[i].indexOf('-') === 0) {
                 break;
             }
-            commandArray.push(args[i]);
+            if(args[i]!=='node'){            
+                commandArray.push(args[i]);
+            }
             optionArray.shift();
-        }
-
+        }     
+        
         var optionMapping = this.parseOptions(optionArray);
+        
+        //从命令数组中识别命令与参数
+        if( commandArray.length > option.commandDepth){
+            var valueFromCommand = [];
+            for(var i=commandArray.length-1, count=option.commandDepth-1; i>count; i--){
+                valueFromCommand.push(commandArray[i]);
+                commandArray.pop();
+            }
+            valueFromCommand = valueFromCommand.reverse();
+        }
+        optionMapping.values = optionMapping.values || [];
+        optionMapping.values = optionMapping.values.concat(valueFromCommand);
+        
         var result = {
             command: commandArray,
             option: optionMapping
