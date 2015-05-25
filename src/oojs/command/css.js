@@ -1,4 +1,4 @@
-define && define({
+oojs.define({
     name:'css',
     namespace:'oojs.command',
     css : function(args){    
@@ -14,11 +14,11 @@ define && define({
     },
     
     run:function(){
-        var fs = require('fs');
-        var cssClass = require('clean-css');
-        var css = new cssClass({keepBreaks: this.isFormat});
-        var sourceString = fs.readFileSync(this.sourcePath, 'utf-8');
-        var compressString = css.minify(sourceString);    
+        var  fs = require('fs');
+        var  cssClass = require('clean-css');
+        var  css = new cssClass({keepBreaks: this.isFormat});
+        var  sourceString = fs.readFileSync(this.sourcePath, 'utf-8');
+        var  compressString = css.minify(sourceString);    
         
         if(this.isOverwrite){
             fs.writeFileSync( this.sourceString, compressString );

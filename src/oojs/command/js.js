@@ -1,4 +1,4 @@
-define && define({
+oojs.define({
     name: 'js',
     namespace: 'oojs.command',
     js: function (args) {
@@ -16,13 +16,13 @@ define && define({
     },
 
     run: function () {
-        var fs = require('fs');
-        var js = require('uglify-js');
-        var sourceString = fs.readFileSync(this.sourcePath, 'utf-8');
-        var compressString;
+        var  fs = require('fs');
+        var  js = require('uglify-js');
+        var  sourceString = fs.readFileSync(this.sourcePath, 'utf-8');
+        var  compressString;
         if (this.isFormat) {
-            var ast = js.parse(sourceString);
-            var formatStream = js.OutputStream({
+            var  ast = js.parse(sourceString);
+            var  formatStream = js.OutputStream({
                 beautify: true,
                 comments: false,
                 width: 120

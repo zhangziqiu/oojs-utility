@@ -1,5 +1,3 @@
-require('node-oojs');
-
 /**
 @class fileSync
 @classdesc 文件操作同步类. 提供node缺失的目录递归创建和目录copy功能.
@@ -10,7 +8,7 @@ require('node-oojs');
 require('node-oojs-utility');
 
 //创建类引用. fileSync类都是静态方法所以不需要创建实例. 直接通过类调用即可.
-var fileSync = oojs.using('oojs.utility.fileSync');
+var  fileSync = oojs.using('oojs.utility.fileSync');
 
 //拷贝文件夹, 如果目标文件夹不存在, 会自动递归创建目标文件夹
 fileSync.copyDirectorySync('./a', './b/c/d/e');
@@ -28,25 +26,55 @@ fileSync.copyDirectorySync('./a', './b/c/d/e', function(fileName, filePath){
 fileSync.getFileListSync('./a');
 
 //同样可以使用filter过滤:
-fileSync.getFileListSync('./a', function(fileName, filePath){
+var  filter = function(fileName, filePath){
     if (fileName.indexOf('.') === 0) {
         return false;
     }
     return true;
-});
+};
 
-
-
-
+fileSync.getFileListSync('./a', {filter:filter});
 */
-define && define({
+oojs.define({
     name: 'fileSync',
     namespace: 'oojs.utility',
-    $fileSync: function () {
-        this.fs = require('fs');
-        this.path = require('path');        
+    deps:{
+        fs: require('fs'),
+        path: require('path'),
+        util: 'oojs.utility.util'
     },
-
+    option:{
+        //文件编码
+        encoding : 'utf8',        
+        //递归查找的层次数        
+        recursion: 10,
+        //过滤器,签名为filter(fileName, filePath), 其中fileName为文件名, filePath为文件路径. 
+        //可以根据fileName和filePath判断当前文件是否需要被过滤.返回true则表示过滤当前文件或文件夹.
+        filter: null        
+    },
+    
+    /**
+    Test whether or not the given path exists by checking with the file system. 
+    @function fileSync.existsSync
+    @static
+    @param {string} filePath a path of file which will be check.
+    @return {boolean} true if exists
+    */
+    existsSync: function(filePath){
+        return this.fs.existsSync(filePath);
+    },
+    
+    /**
+    get the information of a file. return a node fs.Status obejct.
+    @function fileSync.statSync
+    @static
+    @param {string} filePath a path of file which will be check.
+    @return {Obejct} node fs.Status obejct
+    */
+    statSync: function(filePath){
+        return this.fs.statSync(filePath);
+    },
+    
     /**
     读取一个文件, 默认为utf8编码.
     @function fileSync.readFileSync
@@ -56,7 +84,7 @@ define && define({
     @return {string} 文件内容
     */
     readFileSync: function (sourceDirPath, option) {
-        var encoding = option && option.encoding ? option.encoding : 'utf8'
+        var  encoding = option && option.encoding ? option.encoding : 'utf8'
         return this.fs.readFileSync(sourceDirPath, encoding);
     },
 
@@ -74,14 +102,14 @@ define && define({
         sourceDirPath = this.path.resolve(sourceDirPath);
         toDirPath = this.path.resolve(toDirPath);
 
-        var fileList = this.getFileListSync(sourceDirPath, filter);
-        var sourcePath = this.path.resolve(sourceDirPath);
-        var toPath = this.path.resolve(toDirPath);
+        var  fileList = this.getFileListSync(sourceDirPath, {filter:filter});
+        var  sourcePath = this.path.resolve(sourceDirPath);
+        var  toPath = this.path.resolve(toDirPath);
 
 
-        for (var i = 0, count = fileList.length; i < count; i++) {
-            var sourceFilePath = fileList[i];
-            var toFilePath = sourceFilePath.replace(sourceDirPath, toDirPath);
+        for (var  i = 0, count = fileList.length; i < count; i++) {
+            var  sourceFilePath = fileList[i];
+            var  toFilePath = sourceFilePath.replace(sourceDirPath, toDirPath);
             this.copyFileSync(sourceFilePath, toFilePath);
         }
 
@@ -96,7 +124,7 @@ define && define({
     @param {string} toFilePath 目标文件
     */
     copyFileSync: function (sourceFilePath, toFilePath) {
-        var dirPath = this.path.dirname(toFilePath);
+        var  dirPath = this.path.dirname(toFilePath);
         this.mkdirSync(dirPath);
         this.fs.createReadStream(sourceFilePath).pipe(this.fs.createWriteStream(toFilePath));
         //console.log('copy file finished, source:' + sourceFilePath + ',to:' + toFilePath);
@@ -111,7 +139,7 @@ define && define({
     @param {number} mode 创建的文件夹的权限, 比如: 0755, 默认为 0777
     */
     mkdirSync: function (filePath, mode) {
-        var filePath = this.path.resolve(filePath);
+        var  filePath = this.path.resolve(filePath);
         mode = mode || 0777;
 
         //已经存在, 不需要创建
@@ -120,18 +148,18 @@ define && define({
         }
 
         //判断分隔符号
-        var splitChar = '/';
+        var  splitChar = '/';
         if (filePath.indexOf('/') === -1) {
             splitChar = '\\';
         }
 
         filePathArray = filePath.split(splitChar);
 
-        var currentDir;
-        var currentPath;
-        var previousPath = '';
+        var  currentDir;
+        var  currentPath;
+        var  previousPath = '';
 
-        for (var i = 0, count = filePathArray.length; i < count; i++) {
+        for (var  i = 0, count = filePathArray.length; i < count; i++) {
             //获取当前的文件夹名和完成的目录地址
             currentDir = filePathArray[i];
 
@@ -157,33 +185,49 @@ define && define({
     @function fileSync.getFileListSync
     @static
     @param {string} filePath 目标文件夹
-    @param {function} filter 过滤器,签名为filter(fileName, filePath), 其中fileName为文件名, filePath为文件路径. 
-    可以根据fileName和filePath判断当前文件是否需要被过滤.返回false则表示过滤当前文件或文件夹.
+    @param {Object} option 参数对象. 参见当前类的option属性
     */
-    getFileListSync: function (filePath, filter) {
-        var result = [];
+    getFileListSync: function (filePath, option) {
+        var  result = [];
         filePath = filePath || './'; //默认为当前目录
-        var basePath = this.path.resolve(filePath);
-        var basePathFiles = this.fs.readdirSync(basePath);
+        
+        //处理参数默认值
+        option = this.util.merge(option, this.option);
 
+        //判断递归层次  
+        if(option.recursion<1){
+            return result;
+        }
+        
+        //获取传递的文件路径
+        var  basePath = this.path.resolve(filePath);
+
+        //判断文件夹是否存在.
+        if(!this.fs.existsSync(basePath)){
+            return result;
+        }
+        
         //开始遍历文件名
-        for (var i = 0, count = basePathFiles.length; i < count; i++) {
-            var fileName = basePathFiles[i];
-            var filePath = basePath + '/' + fileName;
-            var fileStat = this.fs.statSync(filePath);
-
-            if (filter && !filter(fileName, filePath)) {
-                continue;
-            }
+        var  basePathFiles = this.fs.readdirSync(basePath);
+        
+        for (var  i = 0, count = basePathFiles.length; i < count; i++) {
+            var  fileName = basePathFiles[i];
+            var  filePath = this.path.resolve( basePath + '/' + fileName );
+            var  fileStat = this.fs.statSync(filePath);
 
             //处理文件
             if (fileStat.isFile()) {
-                result.push(filePath);
+                if (option.filter && option.filter(fileName, filePath)) {
+                    continue;
+                }            
+                result.push( filePath );
             }
 
             //处理文件夹
             if (fileStat.isDirectory()) {
-                result = result.concat(this.getFileListSync(filePath, filter));
+                option.recursion = option.recursion-1;
+                result = result.concat(this.getFileListSync(filePath, option));
+                option.recursion = option.recursion+1;
             }
         }
 
@@ -195,29 +239,46 @@ define && define({
     @function fileSync.getDirectoryListSync
     @static
     @param {string} filePath 目标文件夹
-    @param {function} filter 过滤器,签名为filter(fileName, filePath), 其中fileName为文件名, filePath为文件路径. 
-    可以根据fileName和filePath判断当前文件是否需要被过滤.返回false则表示过滤当前文件或文件夹.
+    @param {Object} option 参数对象. 参见当前类的option属性
     */
-    getDirectoryListSync: function (filePath, filter) {
-        var result = [];
+    getDirectoryListSync: function (filePath, option) {
+        var  result = [];
         filePath = filePath || './'; //默认为当前目录
-        var basePath = this.path.resolve(filePath);
-        var basePathFiles = this.fs.readdirSync(basePath);
-
+        
+        //处理参数默认值
+        option = this.util.merge(option, this.option);
+        
+        //判断递归层次  
+        if(option.recursion<1){
+            return result;
+        }
+        
+        //获取传递的文件路径
+        var  basePath = this.path.resolve(filePath);
+        
+        //判断文件夹是否存在.
+        if(!this.fs.existsSync(basePath)){
+            return result;
+        }
+        
         //开始遍历文件名
-        for (var i = 0, count = basePathFiles.length; i < count; i++) {
-            var fileName = basePathFiles[i];
-            var filePath = basePath + '/' + fileName;
-            var fileStat = this.fs.statSync(filePath);
-
-            if (filter && !filter(fileName, filePath)) {
-                continue;
-            }
+        var  basePathFiles = this.fs.readdirSync(basePath);
+        for (var  i = 0, count = basePathFiles.length; i < count; i++) {
+            var  fileName = basePathFiles[i];
+            var  filePath = this.path.resolve( basePath + '/' + fileName );
+            var  fileStat = this.fs.statSync(filePath);
 
             //处理文件夹
             if (fileStat.isDirectory()) {
-                result.push(filePath);
-                result = result.concat(this.getDirectoryListSync(filePath, filter));
+                if (option.filter && option.filter(fileName, filePath)) {
+                    continue;
+                }
+                result.push( filePath );
+                //入栈
+                option.recursion = option.recursion-1;
+                result = result.concat(this.getDirectoryListSync(filePath, option));
+                //出栈
+                option.recursion = option.recursion+1;
             }
         }
 

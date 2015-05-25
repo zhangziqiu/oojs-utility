@@ -2,7 +2,7 @@
     /**
      *   oojs核心, 提供面向对象编程方式.
      **/
-    var oojs = {
+    var  oojs = {
         name: "oojs",
         namespace: "",
         config: {
@@ -19,7 +19,7 @@
         $oojs: function() {
             //设置可访问的 $oojs_config 变量(比如全局变量), 可以修改oojs的初始化设置. 设置项参见oojs.config属性.
             this.config = typeof $oojs_config !== "undefined" ? $oojs_config : this.config;
-            var path = require("path");
+            var  path = require("path");
             if (typeof window !== "undefined") {
                 this.global = this.config.global || window;
                 this.runtime = "browser";
@@ -30,8 +30,8 @@
                 //nodejs模式下, 默认为程序根目录的src文件夹
                 this.basePath = this.config.basePath ? path.resolve(this.config.basePath) : path.resolve(__dirname, "../../../src") + "/";
                 //hack nodejs, 让oojs的类也可以通过node原生的require引用. 
-                var Module = module.constructor;
-                var nativeWrap = Module.wrap;
+                var  Module = module.constructor;
+                var  nativeWrap = Module.wrap;
                 Module.wrap = function(script) {
                     script = script.replace(/define\s*&&\s*define\s*\(/gi, "define(module,");
                     return nativeWrap(script);
@@ -55,9 +55,9 @@
          * @return {Object} 克隆出来的对象.
          */
         fastClone: function(source) {
-            var temp = function() {};
+            var  temp = function() {};
             temp.prototype = source;
-            var result = new temp();
+            var  result = new temp();
             return result;
         },
         /**
@@ -69,16 +69,16 @@
          * @return {Function} this指针被修改的函数
          */
         proxy: function(context, method) {
-            var thisArgs = Array.prototype.slice.apply(arguments);
-            var thisObj = thisArgs.shift();
-            var thisMethod = typeof this === "function" ? this : thisArgs.shift();
+            var  thisArgs = Array.prototype.slice.apply(arguments);
+            var  thisObj = thisArgs.shift();
+            var  thisMethod = typeof this === "function" ? this : thisArgs.shift();
             return function() {
-                var tempArgs = Array.prototype.slice.apply(arguments);
+                var  tempArgs = Array.prototype.slice.apply(arguments);
                 return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
             };
         },
         /**
-         * 创建一个类实例.  var a = oojs.create(classA, 'a');
+         * 创建一个类实例.  var  a = oojs.create(classA, 'a');
          * @public
          * @method create
          * @param {Object} classObj 类对象
@@ -86,19 +86,19 @@
          * @return {Object} 类实例
          */
         create: function(classObj, params) {
-            var args = Array.prototype.slice.call(arguments, 0);
+            var  args = Array.prototype.slice.call(arguments, 0);
             args.shift();
             //构造函数
-            var constructerName = classObj.name || "init";
-            var tempClassObj = function(args) {
+            var  constructerName = classObj.name || "init";
+            var  tempClassObj = function(args) {
                 this[constructerName] = this[constructerName] || function() {};
                 this[constructerName].apply(this, args);
             };
             tempClassObj.prototype = classObj;
-            var result = new tempClassObj(args);
+            var  result = new tempClassObj(args);
             //如果类的某一个属性是对象,则需要克隆
-            for (var classPropertyName in classObj) {
-                var temp = classObj[classPropertyName];
+            for (var  classPropertyName in classObj) {
+                var  temp = classObj[classPropertyName];
                 if (temp && classObj.hasOwnProperty(classPropertyName) && typeof temp === "object") {
                     result[classPropertyName] = this.fastClone(temp);
                 }
@@ -122,7 +122,7 @@
         inherit: function(childClass, parentClass) {
             childClass = typeof childClass === "string" ? this.using(childClass) : childClass;
             parentClass = typeof parentClass === "string" ? this.using(parentClass) : parentClass;
-            for (var key in parentClass) {
+            for (var  key in parentClass) {
                 if (key && parentClass.hasOwnProperty(key) && !childClass.hasOwnProperty(key)) {
                     childClass[key] = parentClass[key];
                 }
@@ -139,15 +139,15 @@
             if (!classObj) {
                 classObj = module;
             }
-            var name = classObj.name;
+            var  name = classObj.name;
             classObj.namespace = classObj.namespace || "";
             classObj.dispose = classObj.dispose || function() {};
-            var preNamespaces = classObj.namespace.split(".");
+            var  preNamespaces = classObj.namespace.split(".");
             //初始化前置命名空间
-            var count = preNamespaces.length;
-            var currClassObj = this.global;
-            var firstName, tempName;
-            for (var i = 0; i < count; i++) {
+            var  count = preNamespaces.length;
+            var  currClassObj = this.global;
+            var  firstName, tempName;
+            for (var  i = 0; i < count; i++) {
                 tempName = preNamespaces[i];
                 if (tempName) {
                     currClassObj[tempName] = currClassObj[tempName] || {};
@@ -161,7 +161,7 @@
                 classObj.___registered = true;
                 currClassObj[name] = classObj;
             } else if (currClassObj[name].___registered && classObj.classType && classObj.classType === "extend") {
-                for (var key in classObj) {
+                for (var  key in classObj) {
                     if (key && classObj.hasOwnProperty(key)) {
                         currClassObj[name][key] = classObj[key];
                     }
@@ -173,7 +173,7 @@
                 this.loadDeps(classObj);
             } else {
                 //执行静态构造函数
-                var staticConstructorName = "$" + name;
+                var  staticConstructorName = "$" + name;
                 classObj[staticConstructorName] && classObj[staticConstructorName]();
             }
             if (module && this.runtime === "node") {
@@ -188,10 +188,10 @@
          * @return {Object} 类引用
          */
         find: function(name) {
-            var result;
-            var nameArray = name.split(".");
+            var  result;
+            var  nameArray = name.split(".");
             result = this.global[nameArray[0]];
-            for (var i = 1, count = nameArray.length; i < count; i++) {
+            for (var  i = 1, count = nameArray.length; i < count; i++) {
                 if (result && result[nameArray[i]]) {
                     result = result[nameArray[i]];
                 } else {
@@ -208,7 +208,7 @@
          * @return {Object} 类引用
          */
         using: function(name) {
-            var result = this.find(name);
+            var  result = this.find(name);
             if (!result) {
                 //加载模块文件, 仅限node模式. node模式属于本地存储, 相当于所有文件已经加载完毕.
                 //在browser模式下, 应该在入口对象的deps中指定main函数需要的依赖模块.
@@ -231,14 +231,14 @@
     };
     //自解析
     oojs.$oojs();
-    oojs.define(typeof module !== "undefined" ? module : null, oojs);
+    var (typeof module !== "undefined" ? module : null, oojs);
     return oojs;
 })();
 
-define && define({
+var ({
     /**
     event类用于处理事件. 自身使用oojs框架实现. 内部实现全部oo化.
-    var ev = oojs.create(oojs.event, );
+    var  ev = oojs.create(oojs.event, );
     单事件绑定:
     ev.bind('eventA', function(data){
         console.log(data);
@@ -315,7 +315,7 @@ define && define({
      * @param {Function} callback 事件处理函数
      */
     bind: function(eventName, callback) {
-        var ev = this.eventList[eventName] = this.eventList[eventName] || {};
+        var  ev = this.eventList[eventName] = this.eventList[eventName] || {};
         (ev.callbacks = ev.callbacks || []).push(callback);
         ev.status = false;
         return this;
@@ -327,9 +327,9 @@ define && define({
      */
     removeListener: function(eventName, callback) {
         if (this.eventList[eventName]) {
-            var ev = this.eventList[eventName];
+            var  ev = this.eventList[eventName];
             if (ev.callbacks && ev.callbacks.length) {
-                for (var i = 0, count = ev.callbacks.length; i < count; i++) {
+                for (var  i = 0, count = ev.callbacks.length; i < count; i++) {
                     if (callback) {
                         if (callback === ev.callbacks[i]) {
                             ev.callbacks[i] = null;
@@ -351,7 +351,7 @@ define && define({
     unbind: function(eventName, callback) {
         if (!eventName && !callback) {
             //移除所有的事件处理函数
-            var key;
+            var  key;
             for (key in this.eventList) {
                 if (key && this.eventList[key] && this.eventList.hasOwnProperty(key)) {
                     this.removeListener(key);
@@ -368,12 +368,12 @@ define && define({
      */
     emit: function(eventName, data) {
         //处理event
-        var ev = this.eventList[eventName];
+        var  ev = this.eventList[eventName];
         if (ev && ev.callbacks && ev.callbacks.length) {
-            var callbackCount = ev.callbacks.length;
+            var  callbackCount = ev.callbacks.length;
             ev.data = [];
-            for (var i = 0; i < callbackCount; i++) {
-                var callback = ev.callbacks[i];
+            for (var  i = 0; i < callbackCount; i++) {
+                var  callback = ev.callbacks[i];
                 if (callback) {
                     ev.data.push(callback(data));
                 }
@@ -382,8 +382,8 @@ define && define({
             ev.status = true;
         }
         //处理group, 找到绑定了event的所有group, 并触发groupEmit
-        var groups = this.eventGroupIndexer[eventName] || [];
-        for (var i = 0, count = groups.length, groupName; i < count; i++) {
+        var  groups = this.eventGroupIndexer[eventName] || [];
+        for (var  i = 0, count = groups.length, groupName; i < count; i++) {
             groupName = groups[i];
             if (groupName) {
                 this.groupEmit(groupName);
@@ -398,15 +398,15 @@ define && define({
      */
     group: function(groupName, eventNames, callback) {
         this.groupList[groupName] = this.groupList[groupName] || {};
-        var group = this.groupList[groupName];
-        var events = group.events = group.events || {};
+        var  group = this.groupList[groupName];
+        var  events = group.events = group.events || {};
         //添加group的callback
         if (callback) {
             (group.callbacks = group.callbacks || []).push(callback);
         }
         //记录event与group的关系    
-        var eventName, eventNames = eventNames || [];
-        for (var i = 0, count = eventNames.length; i < count; i++) {
+        var  eventName, eventNames = eventNames || [];
+        for (var  i = 0, count = eventNames.length; i < count; i++) {
             eventName = eventNames[i];
             events[eventName] = 1;
             (this.eventGroupIndexer[eventName] = this.eventGroupIndexer[eventName] || []).push(groupName);
@@ -417,14 +417,14 @@ define && define({
      * @param {string} groupName 事件组名
      */
     groupEmit: function(groupName) {
-        var group = this.groupList[groupName];
+        var  group = this.groupList[groupName];
         //安全性监测
         if (!group) return;
         //检索group中的所有event是否执行完毕
-        var events = group.events = group.events || {};
-        var groupFinished = true;
-        var callbackData = {};
-        var eventName, ev;
+        var  events = group.events = group.events || {};
+        var  groupFinished = true;
+        var  callbackData = {};
+        var  eventName, ev;
         for (eventName in events) {
             if (eventName && events.hasOwnProperty(eventName)) {
                 ev = this.eventList[eventName];
@@ -443,10 +443,10 @@ define && define({
         if (groupFinished) {
             //处理callback回调函数数组
             group.callbacks = group.callbacks || [];
-            var callbacks = group.callbacks;
-            var count = callbacks.length || 0;
-            var callback;
-            for (var i = 0; i < count; i++) {
+            var  callbacks = group.callbacks;
+            var  count = callbacks.length || 0;
+            var  callback;
+            for (var  i = 0; i < count; i++) {
                 callback = group.callbacks[i];
                 if (callback) {
                     callback(callbackData);
@@ -456,10 +456,10 @@ define && define({
             callback = null;
             group.callbacks = null;
             //处理after回调函数数组
-            var afters = group.afters = group.afters || [];
-            var count = afters.length || 0;
-            var afterCallback;
-            for (var i = 0; i < count; i++) {
+            var  afters = group.afters = group.afters || [];
+            var  count = afters.length || 0;
+            var  afterCallback;
+            for (var  i = 0; i < count; i++) {
                 afterCallback = afters[i];
                 if (afterCallback) {
                     afterCallback(callbackData);
@@ -476,13 +476,13 @@ define && define({
      * @param {Function} callback 回调函数.此回调函数会在事件组绑定的所有事件都执行完毕后执行.
      */
     afterGroup: function(groupName, callback) {
-        var group = this.groupList[groupName] = this.groupList[groupName] || {};
-        var afters = group.afters = group.afters || [];
+        var  group = this.groupList[groupName] = this.groupList[groupName] || {};
+        var  afters = group.afters = group.afters || [];
         afters.push(callback);
     }
 });
 
-define && define({
+var ({
     /**
      * 类加载器. 使用oojs.event实现. 
      * 当类A以类B, 类B依赖类C时, 会递归加载所有的依赖类, 当所有的依赖类都加载完毕后, 执行类A的静态构造函数.
@@ -500,7 +500,7 @@ define && define({
      * @param {boolean} 是否为空对象
      */
     isNullObj: function(obj) {
-        for (var i in obj) {
+        for (var  i in obj) {
             if (obj.hasOwnProperty(i)) {
                 return false;
             }
@@ -537,7 +537,7 @@ define && define({
         }
         this.loading[url] = 1;
         //加载脚本
-        var loader = document.createElement("script");
+        var  loader = document.createElement("script");
         loader.type = "text/javascript";
         loader.async = true;
         loader.src = url;
@@ -553,7 +553,7 @@ define && define({
                 this.ev.emit(url, 1);
             }
         }.proxy(this, url, loader);
-        var s = document.getElementsByTagName("script")[0];
+        var  s = document.getElementsByTagName("script")[0];
         s.parentNode.insertBefore(loader, s);
         return this;
     },
@@ -564,11 +564,11 @@ define && define({
 	 * @return {object} oojs对象引用
      */
     loadDeps: function(classObj) {
-        var deps = classObj.deps;
-        var staticConstructorName = "$" + classObj.name;
+        var  deps = classObj.deps;
+        var  staticConstructorName = "$" + classObj.name;
         if (this.runtime === "nodejs") {
-            var deps = classObj.deps;
-            for (var key in deps) {
+            var  deps = classObj.deps;
+            for (var  key in deps) {
                 if (key && deps.hasOwnProperty(key)) {
                     //classObj[key] = require(this.getClassPath(deps[key]));
                     classObj[key] = this.using(key);
@@ -577,11 +577,11 @@ define && define({
             classObj[staticConstructorName] && classObj[staticConstructorName]();
         } else {
             if (!this.isNullObj(deps)) {
-                for (var key in deps) {
+                for (var  key in deps) {
                     if (key && deps.hasOwnProperty(key)) {
-                        var classFullName = deps[key];
+                        var  classFullName = deps[key];
                         //已经加载完毕的模块
-                        var loadedClass = this.using(classFullName);
+                        var  loadedClass = this.using(classFullName);
                         if (loadedClass) {
                             classObj[key] = loadedClass;
                             continue;
@@ -597,12 +597,12 @@ define && define({
                         //事件组执行完毕后的事件钩子
                         this.ev.afterGroup("loadDeps", function(data, lassObj) {
                             //运行静态构造函数
-                            var staticConstructorName = "$" + classObj.name;
+                            var  staticConstructorName = "$" + classObj.name;
                             classObj[staticConstructorName] && classObj[staticConstructorName]();
                         }.proxy(this, classObj));
                         //加载脚本
-                        var url = this.basePath + classFullName.replace(/\./gi, "/") + ".js";
-                        var jsCallBack = function(classFullName) {
+                        var  url = this.basePath + classFullName.replace(/\./gi, "/") + ".js";
+                        var  jsCallBack = function(classFullName) {
                             this.ev.emit(classFullName);
                         }.proxy(this, classFullName);
                         this.loadScript(url, jsCallBack);

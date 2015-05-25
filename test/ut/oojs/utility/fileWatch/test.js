@@ -1,7 +1,14 @@
 require('node-oojs');
-var fileWatch = oojs.using('oojs.utility.fileWatch');
-fileWatch.watch('./test/ut/oojs/utility/fileWatch/main-dir', function(eventName, fileName){
-    console.log('eventName:' + eventName);
-    console.log('fileName:' + fileName);
+var  fileWatch = oojs.using('oojs.utility.fileWatch');
+var  callback = function () {
+        console.log(arguments);
+    };
+
+fileWatch.watch('./test/ut/oojs/utility/fileWatch/main-dir', {
+    callback: callback
 });
 
+
+// fileWatch.watch('./test/ut/oojs/utility/fileWatch/main-dir/test.txt', function(eventName, fileName){
+// console.log(arguments);
+// });
