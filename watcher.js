@@ -28,12 +28,12 @@ function copy (file) {
     exec(cmd, function (error, stdout, stderr) {
 		if (error) {
 			console.log("[rm Error】--->", error);
-			return;
+			//return;
 		}
 
 		if (stderr) {;
 			console.log("【rm Error】--->", stderr);
-			return;
+			//return;
 		}
 		
 		console.log("【rm Successed】");
@@ -52,7 +52,7 @@ function copy (file) {
 			return;
 		}
 		
-		console.log("【cp Successed】");
+		console.log("【cp Successed】 " + new Date().toString());
 	});
 }
 
