@@ -1,18 +1,11 @@
 define && define({
     name: 'analyse',
-    namespace: 'oojs.command',
+    namespace: 'oojs.utility',
     deps: {
-        fileSync: 'oojs.utility.fileSync',
-        jsHelper: 'oojs.utility.jsHelper',
-        gzip: 'oojs.utility.gzip'
     },
     $analyse: function () {
         this.fs = require('fs');
         this.path = require('path');
-    },
-
-    analyse: function (args) {
-        this.targetFile = args.values[0];
     },
 
     /**
@@ -188,9 +181,9 @@ define && define({
      * 获得排序后的先后关系列表
      * @returns {*}
      */
-    getSortedList: function () {
+    parseSortedDepsList: function (depsList) {
         // 按依赖关系分析出用到的所有类
-        this.loadAllDeps([this.targetFile]);
+        this.loadAllDeps(depsList);
 
         // 检查是否存在循环依赖
         var isCircle = false;
@@ -212,11 +205,6 @@ define && define({
 
         // 依赖关系排序
         return this.sortDeps();
-    },
-
-    run: function () {
-        var list = this.getSortedList();
-        console.log(list);
     }
 
 });
