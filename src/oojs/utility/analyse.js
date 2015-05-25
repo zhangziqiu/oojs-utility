@@ -1,4 +1,4 @@
-define && define({
+oojs.define && oojs.define({
     name: 'analyse',
     namespace: 'oojs.utility',
     deps: {
