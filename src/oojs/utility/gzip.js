@@ -11,7 +11,7 @@ require('node-oojs');
 require('node-oojs-utility');
 
 //创建类引用. gzip 类都是静态方法所以不需要创建实例. 直接通过类调用即可.
-var gzip = oojs.using('oojs.utility.gzip');
+var  gzip = oojs.using('oojs.utility.gzip');
 
 //压缩文件
 gzip.zipFileSync("./test.js.gz", "./test.js");
@@ -20,7 +20,7 @@ gzip.zipFileSync("./test.js.gz", "./test.js");
 gzip.zipStringToFileSync("./test.js.gz", 'eJzT0yMAAGTvBe8=');
 
 */
-define && define({
+oojs.define({
     name: 'gzip',
     namespace: 'oojs.utility',
     $gzip: function() {
@@ -47,13 +47,13 @@ define && define({
     zipStringToFileSync: function(toFilePath, sourceString, option) {
         option = this.processOption(option);
 
-        var tempSourceFilePath = this.path.resolve('./') + "/gzip_temp_file_" + parseInt(Math.random() * 1000000) + ".js";
+        var  tempSourceFilePath = this.path.resolve('./') + "/gzip_temp_file_" + parseInt(Math.random() * 1000000) + ".js";
         this.fs.writeFileSync(tempSourceFilePath, sourceString);
-        var gz = this.zlib.createGzip({
+        var  gz = this.zlib.createGzip({
             level: option.level
         })
-        var inp = this.fs.createReadStream(tempSourceFilePath);
-        var out = this.fs.createWriteStream(toFilePath);
+        var  inp = this.fs.createReadStream(tempSourceFilePath);
+        var  out = this.fs.createWriteStream(toFilePath);
         inp.pipe(gz).pipe(out);
         this.fs.unlinkSync(tempSourceFilePath);
         return true;
@@ -71,11 +71,11 @@ define && define({
     zipFileSync: function(toFilePath, sourceFilePath, option) {
         option = this.processOption(option);
 
-        var gz = this.zlib.createGzip({
+        var  gz = this.zlib.createGzip({
             level: option.level
         })
-        var inp = this.fs.createReadStream(sourceFilePath);
-        var out = this.fs.createWriteStream(toFilePath);
+        var  inp = this.fs.createReadStream(sourceFilePath);
+        var  out = this.fs.createWriteStream(toFilePath);
         inp.pipe(gz).pipe(out);
         return true;
     }

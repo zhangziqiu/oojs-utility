@@ -1,6 +1,6 @@
 require('node-oojs');
 
-define && define({
+oojs.define({
     name: 'fileWatch',
     namespace: 'oojs.utility',
     deps: {
@@ -86,12 +86,12 @@ define && define({
         }
 
         //node自带的监控函数, 在文件改变一次时可能被触发多次. 使用代理函数解决此问题.
-        var context = {};
+        var  context = {};
         context.callback = option.callback;
-        var fileStat = this.fileSync.statSync(filePath);
+        var  fileStat = this.fileSync.statSync(filePath);
 
         //处理文件
-        var directoryPath;
+        var  directoryPath;
         if (fileStat.isFile()) {
             directoryPath = this.path.dirname(filePath);
             this.fs.watch(filePath, option, this.onChange.proxy(this, directoryPath, context));
@@ -101,8 +101,8 @@ define && define({
             this.fs.watch(filePath, option, this.onChange.proxy(this, filePath, context));
 
             //递归监控子文件夹
-            var directoryList = this.fileSync.getDirectoryListSync(filePath, option);
-            for (var i = 0, count = directoryList.length; i < count; i++) {
+            var  directoryList = this.fileSync.getDirectoryListSync(filePath, option);
+            for (var  i = 0, count = directoryList.length; i < count; i++) {
                 directoryPath = directoryList[i];
                 this.fs.watch(directoryPath, option, this.onChange.proxy(this, directoryPath, context));
             }

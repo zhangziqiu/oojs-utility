@@ -1,7 +1,7 @@
-var exec = require('child_process').exec;
+var  exec = require('child_process').exec;
 // https://github.com/mikeal/watch 
 // npm install watch
-var watcher = require('watch'); 
+var  watcher = require('watch'); 
 
 function build () {
 
@@ -20,10 +20,10 @@ function build () {
 	});	
 }
 
-var targetProject = '/usr/local/lib/node_modules/node-oojs-utility/';
+var  targetProject = '/usr/local/lib/node_modules/node-oojs-utility/';
 
 function copy (file) {
-    var cmd = "sudo rm " + targetProject + file;
+    var  cmd = "sudo rm " + targetProject + file;
     console.log(cmd);
     exec(cmd, function (error, stdout, stderr) {
 		if (error) {
@@ -39,7 +39,7 @@ function copy (file) {
 		console.log("【rm Successed】");
 	});
 
-    var cmd2 = "sudo cp " + file + " " + targetProject + file;
+    var  cmd2 = "sudo cp " + file + " " + targetProject + file;
     console.log(cmd2);
     exec(cmd2, function (error, stdout, stderr) {
 		if (error) {

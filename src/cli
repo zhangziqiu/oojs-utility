@@ -2,7 +2,7 @@
 require('node-oojs');
 require('./module.js');
 
-define && define({
+oojs.define({
     name:'cli',
     deps: {
         command: 'oojs.utility.command'

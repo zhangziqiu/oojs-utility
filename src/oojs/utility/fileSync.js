@@ -8,7 +8,7 @@ require('node-oojs');
 require('node-oojs-utility');
 
 //创建类引用. fileSync类都是静态方法所以不需要创建实例. 直接通过类调用即可.
-var fileSync = oojs.using('oojs.utility.fileSync');
+var  fileSync = oojs.using('oojs.utility.fileSync');
 
 //拷贝文件夹, 如果目标文件夹不存在, 会自动递归创建目标文件夹
 fileSync.copyDirectorySync('./a', './b/c/d/e');
@@ -26,7 +26,7 @@ fileSync.copyDirectorySync('./a', './b/c/d/e', function(fileName, filePath){
 fileSync.getFileListSync('./a');
 
 //同样可以使用filter过滤:
-var filter = function(fileName, filePath){
+var  filter = function(fileName, filePath){
     if (fileName.indexOf('.') === 0) {
         return false;
     }
@@ -35,7 +35,7 @@ var filter = function(fileName, filePath){
 
 fileSync.getFileListSync('./a', {filter:filter});
 */
-define && define({
+oojs.define({
     name: 'fileSync',
     namespace: 'oojs.utility',
     deps:{
@@ -84,7 +84,7 @@ define && define({
     @return {string} 文件内容
     */
     readFileSync: function (sourceDirPath, option) {
-        var encoding = option && option.encoding ? option.encoding : 'utf8'
+        var  encoding = option && option.encoding ? option.encoding : 'utf8'
         return this.fs.readFileSync(sourceDirPath, encoding);
     },
 
@@ -102,14 +102,14 @@ define && define({
         sourceDirPath = this.path.resolve(sourceDirPath);
         toDirPath = this.path.resolve(toDirPath);
 
-        var fileList = this.getFileListSync(sourceDirPath, {filter:filter});
-        var sourcePath = this.path.resolve(sourceDirPath);
-        var toPath = this.path.resolve(toDirPath);
+        var  fileList = this.getFileListSync(sourceDirPath, {filter:filter});
+        var  sourcePath = this.path.resolve(sourceDirPath);
+        var  toPath = this.path.resolve(toDirPath);
 
 
-        for (var i = 0, count = fileList.length; i < count; i++) {
-            var sourceFilePath = fileList[i];
-            var toFilePath = sourceFilePath.replace(sourceDirPath, toDirPath);
+        for (var  i = 0, count = fileList.length; i < count; i++) {
+            var  sourceFilePath = fileList[i];
+            var  toFilePath = sourceFilePath.replace(sourceDirPath, toDirPath);
             this.copyFileSync(sourceFilePath, toFilePath);
         }
 
@@ -124,7 +124,7 @@ define && define({
     @param {string} toFilePath 目标文件
     */
     copyFileSync: function (sourceFilePath, toFilePath) {
-        var dirPath = this.path.dirname(toFilePath);
+        var  dirPath = this.path.dirname(toFilePath);
         this.mkdirSync(dirPath);
         this.fs.createReadStream(sourceFilePath).pipe(this.fs.createWriteStream(toFilePath));
         //console.log('copy file finished, source:' + sourceFilePath + ',to:' + toFilePath);
@@ -139,7 +139,7 @@ define && define({
     @param {number} mode 创建的文件夹的权限, 比如: 0755, 默认为 0777
     */
     mkdirSync: function (filePath, mode) {
-        var filePath = this.path.resolve(filePath);
+        var  filePath = this.path.resolve(filePath);
         mode = mode || 0777;
 
         //已经存在, 不需要创建
@@ -148,18 +148,18 @@ define && define({
         }
 
         //判断分隔符号
-        var splitChar = '/';
+        var  splitChar = '/';
         if (filePath.indexOf('/') === -1) {
             splitChar = '\\';
         }
 
         filePathArray = filePath.split(splitChar);
 
-        var currentDir;
-        var currentPath;
-        var previousPath = '';
+        var  currentDir;
+        var  currentPath;
+        var  previousPath = '';
 
-        for (var i = 0, count = filePathArray.length; i < count; i++) {
+        for (var  i = 0, count = filePathArray.length; i < count; i++) {
             //获取当前的文件夹名和完成的目录地址
             currentDir = filePathArray[i];
 
@@ -188,7 +188,7 @@ define && define({
     @param {Object} option 参数对象. 参见当前类的option属性
     */
     getFileListSync: function (filePath, option) {
-        var result = [];
+        var  result = [];
         filePath = filePath || './'; //默认为当前目录
         
         //处理参数默认值
@@ -200,7 +200,7 @@ define && define({
         }
         
         //获取传递的文件路径
-        var basePath = this.path.resolve(filePath);
+        var  basePath = this.path.resolve(filePath);
 
         //判断文件夹是否存在.
         if(!this.fs.existsSync(basePath)){
@@ -208,12 +208,12 @@ define && define({
         }
         
         //开始遍历文件名
-        var basePathFiles = this.fs.readdirSync(basePath);
+        var  basePathFiles = this.fs.readdirSync(basePath);
         
-        for (var i = 0, count = basePathFiles.length; i < count; i++) {
-            var fileName = basePathFiles[i];
-            var filePath = this.path.resolve( basePath + '/' + fileName );
-            var fileStat = this.fs.statSync(filePath);
+        for (var  i = 0, count = basePathFiles.length; i < count; i++) {
+            var  fileName = basePathFiles[i];
+            var  filePath = this.path.resolve( basePath + '/' + fileName );
+            var  fileStat = this.fs.statSync(filePath);
 
             //处理文件
             if (fileStat.isFile()) {
@@ -242,7 +242,7 @@ define && define({
     @param {Object} option 参数对象. 参见当前类的option属性
     */
     getDirectoryListSync: function (filePath, option) {
-        var result = [];
+        var  result = [];
         filePath = filePath || './'; //默认为当前目录
         
         //处理参数默认值
@@ -254,7 +254,7 @@ define && define({
         }
         
         //获取传递的文件路径
-        var basePath = this.path.resolve(filePath);
+        var  basePath = this.path.resolve(filePath);
         
         //判断文件夹是否存在.
         if(!this.fs.existsSync(basePath)){
@@ -262,11 +262,11 @@ define && define({
         }
         
         //开始遍历文件名
-        var basePathFiles = this.fs.readdirSync(basePath);
-        for (var i = 0, count = basePathFiles.length; i < count; i++) {
-            var fileName = basePathFiles[i];
-            var filePath = this.path.resolve( basePath + '/' + fileName );
-            var fileStat = this.fs.statSync(filePath);
+        var  basePathFiles = this.fs.readdirSync(basePath);
+        for (var  i = 0, count = basePathFiles.length; i < count; i++) {
+            var  fileName = basePathFiles[i];
+            var  filePath = this.path.resolve( basePath + '/' + fileName );
+            var  fileStat = this.fs.statSync(filePath);
 
             //处理文件夹
             if (fileStat.isDirectory()) {

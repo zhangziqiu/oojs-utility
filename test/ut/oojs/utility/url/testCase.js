@@ -1,4 +1,4 @@
-var testCase = [];
+var  testCase = [];
 testCase.push({
     url: 'http://www.aaa.com/',
     protocol: 'http',

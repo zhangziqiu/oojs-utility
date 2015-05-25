@@ -1,6 +1,6 @@
 require('node-oojs');
-var fileWatch = oojs.using('oojs.utility.fileWatch');
-var callback = function () {
+var  fileWatch = oojs.using('oojs.utility.fileWatch');
+var  callback = function () {
         console.log(arguments);
     };
 

@@ -1,12 +1,12 @@
 require('node-oojs');
-var assert = require('assert');
-var url = oojs.using('oojs.utility.url');
+var  assert = require('assert');
+var  url = oojs.using('oojs.utility.url');
 
-var testCase = require('./testCase');
+var  testCase = require('./testCase');
 console.log('testing......');
-for (var i = 0, count = testCase.length; i < count; i++) {
-    var item = testCase[i];
-    var result = url.parse(item.url);
+for (var  i = 0, count = testCase.length; i < count; i++) {
+    var  item = testCase[i];
+    var  result = url.parse(item.url);
     if (item.protocol) {
         assert.equal(result.protocol, item.protocol);
     }

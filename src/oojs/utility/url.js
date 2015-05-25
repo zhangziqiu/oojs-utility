@@ -13,14 +13,25 @@ misc/url.js urlparser parse(): 51275  qps/second
 misc/url.js oojs-utility-url parse(): 182057  qps/second
 
 */
-define && define({
+oojs.define({
     name: 'url',
     namespace: 'oojs.utility',
 
     $url: function () {
-        this.originUrl = require('url');
+        try{
+            this.originUrl = require('url');
+        }
+        catch(ex){
+            this.originUrl = false;
+        }
+        
     },
 
+    /*
+    url: 待解析的url.
+    parseQueryString: 是否解析QueryString参数.
+    startAtPath: 是否从path开始. 如果是'/a/b.html'这种形式的url, 则需要传递true
+    */
     parse: function (url, parseQueryString, startAtPath) {
         if (typeof url !== "string") {
             throw new TypeError("Parameter 'url' must be a string, not " + typeof url);
@@ -28,9 +39,9 @@ define && define({
 
         //http://www.aaa.com:8080/b/c/d.html?e=1&f=2#ggg
         //http://www.aaa.com:8080/b/c/d.html?e=1&f=2
-        var start = 0;
-        var end = url.length - 1;
-        var result = { origin:url };
+        var  start = 0;
+        var  end = url.length - 1;
+        var  result = { origin:url };
         parseQueryString = typeof parseQueryString === 'undefined' ? true : parseQueryString;
 
         //Trim leading and trailing ws
@@ -39,7 +50,7 @@ define && define({
 
         if(!startAtPath){
             //process protocal
-            for (var i = start; i <= end; ++i) {
+            for (var  i = start; i <= end; ++i) {
                 if (url.charCodeAt(i) === 0x3A /*':'*/ ) {
                     result.protocol = url.slice(start, i);
                     start = i + 3;
@@ -48,9 +59,9 @@ define && define({
             }
 
             //process host
-            var matchPort = false;
-            for (var i = start; i <= end; ++i) {
-                var ch = url.charCodeAt(i);
+            var  matchPort = false;
+            for (var  i = start; i <= end; ++i) {
+                var  ch = url.charCodeAt(i);
                 if (ch === 0x2F /*'/'*/ ) {
                     if (matchPort) {
                         result.port = url.slice(start, i);
@@ -74,16 +85,16 @@ define && define({
             //Trim leading '/'
             while (url.charCodeAt(start) === 0x2F /*' '*/ ) start++;
         
-            var pathArray = [];
-            var pathEnd = false;
-            var queryEnd = false;
-            var query = {};
-            var queryName;
-            var queryValue;
-            var ch;
+            var  pathArray = [];
+            var  pathEnd = false;
+            var  queryEnd = false;
+            var  query = {};
+            var  queryName;
+            var  queryValue;
+            var  ch;
             end = end + 1;
 
-            for (var i = start; i <= end; ++i) {
+            for (var  i = start; i <= end; ++i) {
                 if (i === end) {
                     if (pathEnd) {
                         if (queryEnd) {
@@ -110,10 +121,13 @@ define && define({
                         break;
                     case 0x3F:
                         pathEnd = true;
-                        var currentPath = url.slice(start, i);
-                        if(!currentPath || currentPath.length<0){
-                            currentPath = 'index';
+                        var  currentPath = url.slice(start, i);
+						//设置默认文档
+						/*
+                        if(!currentPath || currentPath.length<0){                            
+							currentPath = 'index.html';
                         }
+						*/
                         pathArray.push(currentPath);
                         start = i + 1;
                         break;
@@ -165,11 +179,22 @@ define && define({
     },
 
     format: function (urlObj) {
-        return this.originUrl.format(urlObj);
+        if( this.originUrl ){
+            return this.originUrl.format(urlObj);
+        }
+        else{
+            throw new Error("format method only supported in nodejs");
+        }
+        
     },
 
     resolve: function (from, to){
-        return this.originUrl.resolve(from, to);
+        if( this.originUrl ){
+            return this.originUrl.resolve(from, to);
+        }
+        else{
+            throw new Error("resolve method only supported in nodejs");
+        }
     }
 
 });

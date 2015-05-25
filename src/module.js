@@ -1,5 +1,5 @@
 require('node-oojs');
-define && define({
+oojs.define({
     name: 'module',
     $module: function () {
         oojs.setPath({'oojs.utility':__dirname});

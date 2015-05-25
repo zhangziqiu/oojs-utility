@@ -1,4 +1,4 @@
-define && define({
+oojs.define({
     name: 'httpServer',
     namespace: 'oojs.utility',
     deps: {
@@ -25,33 +25,33 @@ define && define({
         this.option.viewNamespace = this.option.namespace ? this.option.namespace + '.view' : 'view';
 
         //获取controller所在目录  
-        var controllerPath = oojs.getClassPath(this.option.controllerNamespace).replace('.js', '');
-        var controllerFileList = this.fileSync.getFileListSync(controllerPath);
+        var  controllerPath = oojs.getClassPath(this.option.controllerNamespace).replace('.js', '');
+        var  controllerFileList = this.fileSync.getFileListSync(controllerPath);
 
-        for (var i = 0, count = controllerFileList.length; i < count; i++) {
-            var controller = require(controllerFileList[i]);
+        for (var  i = 0, count = controllerFileList.length; i < count; i++) {
+            var  controller = require(controllerFileList[i]);
             this.registerController(controller);
         }
 
         //设置根controller
-        var staticController = oojs.using('oojs.controller.static');
+        var  staticController = oojs.using('oojs.controller.static');
         this.registerController(staticController, '/');
 
         //创建node自带的http对象
-        var server = this.http.createServer(this.onRequest.proxy(this));
+        var  server = this.http.createServer(this.onRequest.proxy(this));
         return server;
     },
 
     registerController: function (controller, namespace) {
-        var node = this.path;
+        var  node = this.path;
 
         if (!namespace) {
             namespace = controller.namespace + '.' + controller.name;
             namespace = namespace.toLowerCase();
             namespace = namespace.replace(this.option.controllerNamespace + '.', '');
-            var namespaceArray = namespace.split('.');
-            for (var i = 0, count = namespaceArray.length; i < count; i++) {
-                var currentName = namespaceArray[i].toLowerCase();
+            var  namespaceArray = namespace.split('.');
+            for (var  i = 0, count = namespaceArray.length; i < count; i++) {
+                var  currentName = namespaceArray[i].toLowerCase();
                 node[currentName] = node[currentName] || {};
                 node = node[currentName];
             }
@@ -65,19 +65,19 @@ define && define({
     },
 
     OnRequestEnd: function (context) {
-        var controller = context.controller;
-        var urlPath = context.url.path;
+        var  controller = context.controller;
+        var  urlPath = context.url.path;
         if (controller.type === 'rewrite' && controller.query) {
-            for (var key in controller.query) {
+            for (var  key in controller.query) {
                 if (key && controller.query.hasOwnProperty(key)) {
-                    var queryItem = controller.query[key];
+                    var  queryItem = controller.query[key];
                     if (queryItem.index > -1) {
-                        var tempIndex = queryItem.index + context.controllerPathIndex;
-                        var tempValue = urlPath[tempIndex];
+                        var  tempIndex = queryItem.index + context.controllerPathIndex;
+                        var  tempValue = urlPath[tempIndex];
                         //从url路径中获取参数
                         if (tempIndex === urlPath.length - 1) {
                             //去掉"page.html"中的".html"
-                            var tempValueIndex = tempValue.indexOf('.');
+                            var  tempValueIndex = tempValue.indexOf('.');
                             if (tempValueIndex > 0) {
                                 tempValue = tempValue.slice(0, tempValueIndex);
                             }
@@ -91,28 +91,28 @@ define && define({
     },
 
     onRequest: function (request, response) {
-        var method = request.method.toLowerCase();
-        var querystring = require('querystring');
+        var  method = request.method.toLowerCase();
+        var  querystring = require('querystring');
 
         //每个请求有一个context对象, 保存和当前请求所有相关的上下文信息.
-        var context = {};
+        var  context = {};
         context.request = request;
         context.response = response;
         context.data = [];
 
         //解析url, 获取controller和url参数
-        var url = request.url;
-        var urlObj = this.urlparser.parse(url, true, true);
+        var  url = request.url;
+        var  urlObj = this.urlparser.parse(url, true, true);
         if (!urlObj.path || urlObj.path.length < 1) {
             urlObj.path = ['index'];
         }
         context.url = urlObj;
 
         //根据url路径获取controller        
-        var node = this.path;
-        var nodeIndex = 0;
-        for (var i = 0, count = urlObj.path.length; i < count; i++) {
-            var pathName = urlObj.path[i].toLowerCase();
+        var  node = this.path;
+        var  nodeIndex = 0;
+        for (var  i = 0, count = urlObj.path.length; i < count; i++) {
+            var  pathName = urlObj.path[i].toLowerCase();
             if (node[pathName]) {
                 node = node[pathName];
             }

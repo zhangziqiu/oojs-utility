@@ -2,7 +2,7 @@
 @class command
 @classdesc 处理命令行的命令和参数
 */
-define && define({
+oojs.define({
     name: 'command',
     namespace: 'oojs.utility',
     /**
@@ -10,7 +10,7 @@ define && define({
     @return {Object} 一个对象, command属性为命令数组, option属性为参数的mapping对象.
     */
     getCommand: function (option) {
-        var commandArray = [];
+        var  commandArray = [];
         option = option || {};
         //命令深度, 即支持几级命令. 
         //比如二级命令: oojs smart a.js, 其中oojs是一级命令, smart是二级命令, a.js是参数而不是命令.
@@ -20,9 +20,9 @@ define && define({
         //所有的参数
         args = option.args || process.argv;
         //选项参数
-        var optionArray = args.concat();
+        var  optionArray = args.concat();
 
-        for (var i = 0, count = args.length; i < count; i++) {
+        for (var  i = 0, count = args.length; i < count; i++) {
             if (!args[i] || args[i].indexOf('-') === 0) {
                 break;
             }
@@ -32,12 +32,12 @@ define && define({
             optionArray.shift();
         }     
         
-        var optionMapping = this.parseOptions(optionArray);
+        var  optionMapping = this.parseOptions(optionArray);
         
         //从命令数组中识别命令与参数
         if( commandArray.length > option.commandDepth){
-            var valueFromCommand = [];
-            for(var i=commandArray.length-1, count=option.commandDepth-1; i>count; i--){
+            var  valueFromCommand = [];
+            for(var  i=commandArray.length-1, count=option.commandDepth-1; i>count; i--){
                 valueFromCommand.push(commandArray[i]);
                 commandArray.pop();
             }
@@ -46,7 +46,7 @@ define && define({
         optionMapping.values = optionMapping.values || [];
         optionMapping.values = optionMapping.values.concat(valueFromCommand);
         
-        var result = {
+        var  result = {
             command: commandArray,
             option: optionMapping
         };
@@ -58,21 +58,21 @@ define && define({
     @return {Object} 一个mapping对象, key为参数名, value为参数值. 对象有一个特殊属性values数组, 存储不属于任何参数的值
     */
     parseOptions: function (optionArray) {
-        var result = {
+        var  result = {
             values: []
         };
 
         //参数名
-        var optionName;
+        var  optionName;
         //参数值
-        var optionValue;
-        for (var i = 0, count = optionArray.length; i < count;) {
+        var  optionValue;
+        for (var  i = 0, count = optionArray.length; i < count;) {
             optionName = optionArray[i];
             optionValue = optionArray[i + 1];
             if (optionName.indexOf('--') === 0) {
                 //--n=0
                 optionName = optionName.substring(2);
-                var tempArray = optionName.split('=');
+                var  tempArray = optionName.split('=');
                 optionName = tempArray[0];
                 optionValue = tempArray[1];
                 result[optionName] = optionValue;

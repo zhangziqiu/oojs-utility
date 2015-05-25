@@ -1,4 +1,4 @@
-define && define({
+oojs.define({
    name: 'test',
    namespace: 'oojs.command',
    test:function(args){
