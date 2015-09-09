@@ -1,26 +1,51 @@
 {
-    "name": "node-oojs-utility",
-    "description": "oojs utility library",
-    "homepage": "https://github.com/zhangziqiu/oojs-utility",
-    "main": "./src/module.js",
-    "version": "1.1.18",
-    "engines": {
-        "node": ">=0.10.0"
-    },
-    "maintainers": [{
-        "name": "zhangziqiu",
-        "email": "zhangziqiu@qq.com"
-    }],
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/zhangziqiu/oojs-utility.git"
-    },
-    "dependencies": {
-        "node-oojs": ">=1.1.0",
-        "uglify-js": "*",
-        "clean-css": "*"
-    },
-    "bin": {
-        "oojs": "./src/cli"
+  "name": "node-oojs-utility",
+  "description": "oojs utility library",
+  "homepage": "https://github.com/zhangziqiu/oojs-utility",
+  "main": "./src/module.js",
+  "version": "1.1.20",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "maintainers": [
+    {
+      "name": "zhangziqiu",
+      "email": "zhangziqiu@qq.com"
     }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhangziqiu/oojs-utility.git"
+  },
+  "dependencies": {
+    "chokidar": "^1.0.5",
+    "clean-css": "*",
+    "md5": "^2.0.0",
+    "node-oojs": ">=1.1.0",
+    "uglify-js": "*"
+  },
+  "bin": {
+    "oojs": "./src/cli"
+  },
+  "gitHead": "afba6ad591246630288cd4a6cf04b4ad15df8b8d",
+  "bugs": {
+    "url": "https://github.com/zhangziqiu/oojs-utility/issues"
+  },
+  "_id": "node-oojs-utility@1.1.20",
+  "scripts": {},
+  "_shasum": "687acc24082f89651698e342f1be9194964cd7ee",
+  "_from": "node-oojs-utility@*",
+  "_npmVersion": "2.7.4",
+  "_nodeVersion": "0.12.2",
+  "_npmUser": {
+    "name": "zhangziqiu",
+    "email": "zhangziqiu@qq.com"
+  },
+  "dist": {
+    "shasum": "687acc24082f89651698e342f1be9194964cd7ee",
+    "tarball": "http://registry.npmjs.org/node-oojs-utility/-/node-oojs-utility-1.1.20.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/node-oojs-utility/-/node-oojs-utility-1.1.20.tgz",
+  "readme": "ERROR: No README data found!"
 }

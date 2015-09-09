@@ -21,7 +21,19 @@ oojs.define && oojs.define({
         var ujs = require('uglify-js');
         var fs = require('fs');
         var code = fs.readFileSync(path, 'utf-8');
-        var ast = ujs.parse(code);
+        try {
+            var ast = ujs.parse(code);            
+        } catch (e) {
+            console.log('------> uglify-js parse error <------:', '\n',
+                'filepath', path, '\n',
+                'message:', e.message, '\n',
+                'line:', e.line, '\n',
+                'col:', e.col, '\n',
+                'pos:', e.pos, '\n'
+            );
+            console.log('------> exit process now <------');
+            process.exit();
+        }
         ast.figure_out_scope();
         ast.walk(new ujs.TreeWalker(function (node) {
             if (node instanceof ujs.AST_Call 
@@ -73,7 +85,7 @@ oojs.define && oojs.define({
      **/
     loadAllDeps: function (depsList) {
         this.depsRecordMap = this.depsRecordMap || {};
-
+        // this.depsMap = this.depsMap || {}
         for (var i = 0, count = depsList.length; i < count; i++) {
             var depsClassFullName = depsList[i];
             if (!this.depsRecordMap.hasOwnProperty(depsClassFullName)) {
@@ -86,7 +98,9 @@ oojs.define && oojs.define({
             }
         }
     },
-
+    getDepsRecordMap: function () {
+        return this.depsRecordMap;
+    },
     /**
      * 检查循环依赖
      *
@@ -127,15 +141,15 @@ oojs.define && oojs.define({
         return false;
     },
 
-    sortDeps: function (list) {
+    sortDeps: function (list, depsMap) {
         list = list || [];
+        this.depsRecordMap = depsMap? depsMap: this.depsRecordMap;
 
         var count = 0;
         for (var key in this.depsRecordMap) {
             if (key && this.depsRecordMap.hasOwnProperty(key) && this.depsRecordMap[key]) {
                 var classDes = this.depsRecordMap[key];
                 // 出度为0
-                //console.log(classDes);
                 if (
                     !classDes.hasOwnProperty('deps')
                     || classDes.deps.length === 0
@@ -177,11 +191,35 @@ oojs.define && oojs.define({
 
     },
 
+    deepCopyDeps: function (depsRecordMap) {
+        var cloneObject = {};
+
+        for (var moduleName in depsRecordMap) {
+            var moduleDeps = depsRecordMap[moduleName]['deps'];
+            cloneObject[moduleName] = {
+                deps: []
+            };
+
+            if (moduleDeps && moduleDeps.length) {
+                for (var i = 0; i < moduleDeps.length ; i++) {
+                    cloneObject[moduleName]['deps'][i] = moduleDeps[i];
+                }
+            }
+        }
+
+        return cloneObject;
+    },
+
+    getCloneDeps: function () {
+        return this.cloneDepsMap;
+    },
+
     /**
      * 获得排序后的先后关系列表
      * @returns {*}
      */
     parseSortedDepsList: function (depsList) {
+        this.depsRecordMap = {};
         // 按依赖关系分析出用到的所有类
         this.loadAllDeps(depsList);
 
@@ -202,6 +240,7 @@ oojs.define && oojs.define({
             console.log(badSnakeList);
             return;
         }
+        this.cloneDepsMap = this.deepCopyDeps(this.depsRecordMap);
 
         // 依赖关系排序
         return this.sortDeps();
