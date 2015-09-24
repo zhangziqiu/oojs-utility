@@ -5,7 +5,47 @@ oojs 工具库.
 具体文档参见:
 ./doc/index.html
 
-# 2015.9.8 更新
+# 2015.9.24 更新：新增painter打包功能
+
+如果需要打包painter,在package.json文件中build下新增打包任务，任务名称务必带有`painter`（大小写均可），如：
+
+```
+"build": {
+    "main": {
+        "template": "./entry/ssp.js",
+        "sourceFile": ["./test/ssp.source.js"],
+        "formatFile": ["./test/ssp.js"],
+        "compressFile": ["./asset/ssp.js"],
+        "gzipFile": ["./asset/ssp.js.gz"]
+    },
+    "slidePainter": {
+        "template": "./src/dup/ui/painter/slide.js",
+        "sourceFile": ["./test/painter/slide.source.js"],
+        "formatFile": ["./test/painter/slide.js"],
+        "compressFile": ["./asset/painter/slide.js"],
+        "gzipFile": ["./asset/painter/slide.js.gz"]        
+    },
+    "inlayFixPainter": {
+        "template": "./src/dup/ui/painter/inlayFix.js",
+        "sourceFile": ["./test/painter/inlayFix.source.js"],
+        "formatFile": ["./test/painter/inlayFix.js"],
+        "compressFile": ["./asset/painter/inlayFix.js"],
+        "gzipFile": ["./asset/painter/inlayFix.js.gz"]            
+    },
+    "floatPainter": {
+        "template": "./src/dup/ui/painter/float.js",
+        "sourceFile": ["./test/painter/float.source.js"],
+        "formatFile": ["./test/painter/float.js"],
+        "compressFile": ["./asset/painter/float.js"],
+        "gzipFile": ["./asset/painter/float.js.gz"]            
+    }
+}
+```
+运行`oojs build`即可。也可以使用`oojs watch`对文件修改进行监视，也可自动打包painter
+
+
+
+# 2015.9.8 更新:新增`oojs watch`
 
 ## 原oojs-build工具存在的问题：
 
