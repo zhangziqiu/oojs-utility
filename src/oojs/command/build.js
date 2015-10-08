@@ -12,8 +12,16 @@ oojs.define({
         this.fs = require('fs');
         this.path = require('path');
         this.md5 = require('md5');
+        // 所有模块源码缓存
+        // this.cache["dup.ui.painter.slide"] = 'xxxxx';
         this.cache = {};
+        // 总控依赖的所有**打包用的**模块（有序）
         this.allDepsList = [];
+        // 所有模块的依赖信息，模块中的`deps`字段
+        // this.depsMap
+        
+        // 所有painter**打包需要的**所有模块（有序）
+        this.painterDepsList = {}
     },
 
     build: function (args) {
@@ -42,6 +50,55 @@ oojs.define({
         }
     }
     */
+    checkIsPainter: function (buildName, buildTask) {
+        var keyword = 'painter';
+
+        if (buildName.toLowerCase().indexOf(keyword) > 0) {
+            return true;
+        }
+
+        if (buildTask.type && buildTask.type === keyword) {
+            return true;
+        }
+
+        return false;
+    },
+    buildSwitch: function (modifiedModuleName) {
+        for (var key in this.buildObj) {
+
+            if (this.checkIsPainter(key, this.buildObj[key])) {
+                // 每次只打包与改动模块相关的painter或者总控
+                if (modifiedModuleName) {
+                    var templateFile = this.buildObj[key].template;
+                    var painterModuleName = this.pathMap2ModuleName(templateFile);
+                    var deps = this.painterDepsList[painterModuleName];
+                    for (var i = 0; i < deps.length; i++) {
+                        if (deps[i] == modifiedModuleName) {
+                            console.log(modifiedModuleName);
+                            this.buildPainter(this.buildObj[key], true);                            
+                        }
+                    }
+                } else {
+                    // 如果没有传递修改模块，则继续打包
+                    this.buildPainter(this.buildObj[key]);
+                }
+
+            } else {
+                if (modifiedModuleName) {
+                    var templateFile = this.buildObj[key].template;
+                    var moduleName = this.pathMap2ModuleName(templateFile);
+                    for (var i = 0; i < this.allDepsList.length; i++) {
+                        if (this.allDepsList[i] == moduleName) {
+                            this.buildItem(this.buildObj[key]);
+                        }
+                    }
+                }
+                else {
+                    this.buildItem(this.buildObj[key]);
+                }
+            }
+        }
+    },
     run: function () {
         var  packageObj = require(this.configPath);
         var  buildObj = packageObj.build;
@@ -50,11 +107,100 @@ oojs.define({
             this.buildItem(buildObj[this.target]);
             return;
         }
-        for (var  key in buildObj) {
-            if (key && buildObj[key] && buildObj.hasOwnProperty(key)) {
-                this.buildItem(buildObj[key]);
+
+        this.buildSwitch();
+    },
+    pathMap2ModuleName: function (path) {
+        path = path.split("/");
+        path.splice(0, path.indexOf('dup'));
+        path = path.join('.').replace('.js', '');
+        return path;
+    },    
+    buildPainter: function (painerObj, onWatch) {
+        var filePath = painerObj.template;
+        var sourceFilePath = painerObj.sourceFile;
+        var formatFilePath = painerObj.formatFile;
+        var compressFilePath = painerObj.compressFile;
+        var gzipFilePath = painerObj.gzipFile;
+
+        var moduleName = this.pathMap2ModuleName(filePath);
+        // 找到该模块所依赖所有模块（有序, 包括子孙的依赖）
+        var moduleDeps = this.analyse.parseSortedDepsList([moduleName]);
+        // 获取所有模块的直接依赖
+        var directDeps = this.analyse.getCloneDeps();
+
+
+        // 剔除已经打包在总控中的模块
+        for (var i = 0; i < moduleDeps.length; i++) {
+            if (this.allDepsList.indexOf(moduleDeps[i]) > -1) {
+                moduleDeps.splice(i--, 1);
             }
         }
+
+        this.painterDepsList[moduleName] = moduleDeps;
+
+        // 如果所有的模块以及打包在总控中，则不需要进行接下来的打包工作
+        if (!moduleDeps.length) {
+            console.log("Warning:", moduleName, 'already build in ssp.js');
+            return;
+        }
+
+        var sourceStr = '';
+        var formatStr = '';
+
+        for (var i = 0; i < moduleDeps.length; i++) {
+            var name = moduleDeps[i];
+            // 新增总控中未打包进的模块的依赖
+            this.depsMap[name] = directDeps[name]
+
+            if (!this.cache[name]) {
+                var path = oojs.getClassPath(name);
+
+                var source = this.fileSync.readFileSync(path);
+                var sourceMd5Val = this.md5(source);
+
+                this.cache[name] = {
+                    'source': source,
+                    'md5': sourceMd5Val,
+                    'format': this.jsHelper.formatSync(source, {
+                        comments: false
+                    })
+                }
+            }
+            else {
+                // console.log(name, 'already been cached');
+            }
+
+            sourceStr += this.cache[name].source;
+            formatStr += this.cache[name].format;
+        }
+
+        for (var i = 0; i < sourceFilePath.length; i++) {
+            this.fs.writeFileSync(sourceFilePath[i], ';(function(oojs) {' + sourceStr + '})(_dup_global.oojs);');
+        }        
+        console.log(moduleName, 'source build successfully');
+        
+        for (var i = 0; i < formatFilePath.length; i++) {
+            this.fs.writeFileSync(formatFilePath[i], ';(function(oojs) {' + formatStr + '})(_dup_global.oojs);');
+        }
+        console.log(moduleName, 'format build successfully');
+
+        // 如果处于开发模式，则不进行压缩和gzip压缩
+        if (onWatch) {
+            return false;
+        }
+        
+        for (var i = 0; i < compressFilePath.length; i++) {
+            var compressStr = this.jsHelper.compressSync(formatStr);
+            this.fs.writeFileSync(compressFilePath[i], ';(function(oojs) {' + compressStr + '})(_dup_global.oojs);');
+        }
+        console.log(moduleName, 'compress build successfully');
+
+        for (var  i = 0; i < gzipFilePath.length; i++) {
+            this.gzip.zipStringToFileSync(gzipFilePath[i], compressStr);
+        }        
+        console.log(moduleName, 'gzip build successfully');
+    
     },
     compareDeps: function (oldDeps, newDeps) {
         var result = {
@@ -174,9 +320,14 @@ oojs.define({
             var newDeps = analyseResult.deps;          
             var compareDepsResult = this.compareDeps(oldDeps, newDeps);
 
+            // 如果修改后的模块依赖发生更改
+            // 重新计算打包依赖的所有模块
             if (compareDepsResult.dels.length || compareDepsResult.adds.length) {
+                // 更新单个模块额缓存代码
                 this.cache[className]['source'] = source;
+                // 更新该模块的依赖
                 this.depsMap[className]['deps'] = this.deepCopyArray(newDeps);         
+                // 重新计算所有模块的依赖，以防止有循环依赖
                 this.reCalculateAllDeps();                
             }
 
@@ -208,17 +359,14 @@ oojs.define({
         });  
         return true;                        
     },
-    rebuild: function () {
-        for (var  key in this.buildObj) {
-            if (key && this.buildObj[key] && this.buildObj.hasOwnProperty(key)) {
-                // this.buildTotally(this.buildObj[key]);
-                this.build4watch(this.buildObj[key]);
-            }
-        }
+    rebuild: function (modifiedModuleName) {
+        console.log("modifiedModuleName----->", modifiedModuleName);
+        this.buildSwitch(modifiedModuleName);
     },
     reCalculateAllDeps: function () {
         var  importWithDepsRegexp = /\$importAll\((\S+)\)\s*;/gi;
 
+        // 总控
         this.originSourceFileString.replace(importWithDepsRegexp, function () {
             var  result = [];
             var  importFilePath = arguments[1];
@@ -241,6 +389,25 @@ oojs.define({
                 }
             }
         }.proxy(this));
+
+        // painter:
+        for (var moduleName in this.painterDepsList) {
+            var moduleDeps = this.analyse.parseSortedDepsList([moduleName]);            
+            this.painterDepsList[moduleName] = moduleDeps;
+            for (var i = 0; i < moduleDeps.length; i++) {
+                var clsName = moduleDeps[i];
+                // 如果有新模块加入
+                if (!this.cache[clsName]) {
+                    var clsFilePath = oojs.getClassPath(clsName);
+                    var code = this.fileSync.readFileSync(clsFilePath, 'utf-8');
+                    // 更新代码缓存
+                    var singleCache = (this.cache[clsName] = this.cache[clsName] || {});
+                    singleCache['source'] = code;
+                    singleCache['md5'] = this.md5(code);
+                }                                
+            }
+        }
+
     },
     build4watch: function (item) {
         //处理source文件
@@ -341,6 +508,8 @@ oojs.define({
             importFilePath = importFilePath.replace(/\'/gi, "").replace(/\"/gi, "");
             var sourceCode = '';
             this.allDepsList = this.analyse.parseSortedDepsList([importFilePath]);
+            // console.log("------>", importFilePath);
+            // console.log("------>", this.allDepsList);
 
             // 缓存所有模块的依赖信息
             this.depsMap = this.analyse.getCloneDeps();
@@ -367,7 +536,7 @@ oojs.define({
 
         this.buildTotally(item);
 
-        console.log('First build totally cost', +new Date - buildItemStartTimestamp, 'ms');
+        console.log('First ssp.js build totally cost', +new Date - buildItemStartTimestamp, 'ms');
     } 
 
 });
