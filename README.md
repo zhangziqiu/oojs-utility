@@ -7,7 +7,7 @@ oojs 工具库.
 
 # 2015.9.24 更新：新增painter打包功能
 
-如果需要打包painter,在package.json文件中build下新增打包任务，任务名称务必带有`painter`（大小写均可），如：
+如果需要打包painter,在package.json文件中build下新增打包任务，任务名称务必带有`painter`（大小写均可），或者任务中存在`type`属性，并且`type`值为`painter` 如：
 
 ```
 "build": {
@@ -19,6 +19,7 @@ oojs 工具库.
         "gzipFile": ["./asset/ssp.js.gz"]
     },
     "slidePainter": {
+        "type": "painter",
         "template": "./src/dup/ui/painter/slide.js",
         "sourceFile": ["./test/painter/slide.source.js"],
         "formatFile": ["./test/painter/slide.js"],
