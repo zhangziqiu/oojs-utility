@@ -13,13 +13,14 @@ oojs.define({
         this.path = require('path');
         this.md5 = require('md5');
         // 所有模块源码缓存
+        // this.cache["dup.ui.painter.slide"] = 'xxxxx';
         this.cache = {};
-        // 总控依赖的所有模块（有序）
+        // 总控依赖的所有**打包用的**模块（有序）
         this.allDepsList = [];
-        // 所有模块的依赖信息
+        // 所有模块的依赖信息，模块中的`deps`字段
         // this.depsMap
         
-        // 所有painter打包需要的模块
+        // 所有painter**打包需要的**所有模块（有序）
         this.painterDepsList = {}
     },
 
@@ -49,6 +50,55 @@ oojs.define({
         }
     }
     */
+    checkIsPainter: function (buildName, buildTask) {
+        var keyword = 'painter';
+
+        if (buildName.toLowerCase().indexOf(keyword) > 0) {
+            return true;
+        }
+
+        if (buildTask.type && buildTask.type === keyword) {
+            return true;
+        }
+
+        return false;
+    },
+    buildSwitch: function (modifiedModuleName) {
+        for (var key in this.buildObj) {
+
+            if (this.checkIsPainter(key, this.buildObj[key])) {
+                // 每次只打包与改动模块相关的painter或者总控
+                if (modifiedModuleName) {
+                    var templateFile = this.buildObj[key].template;
+                    var painterModuleName = this.pathMap2ModuleName(templateFile);
+                    var deps = this.painterDepsList[painterModuleName];
+                    for (var i = 0; i < deps.length; i++) {
+                        if (deps[i] == modifiedModuleName) {
+                            console.log(modifiedModuleName);
+                            this.buildPainter(this.buildObj[key], true);                            
+                        }
+                    }
+                } else {
+                    // 如果没有传递修改模块，则继续打包
+                    this.buildPainter(this.buildObj[key]);
+                }
+
+            } else {
+                if (modifiedModuleName) {
+                    var templateFile = this.buildObj[key].template;
+                    var moduleName = this.pathMap2ModuleName(templateFile);
+                    for (var i = 0; i < this.allDepsList.length; i++) {
+                        if (this.allDepsList[i] == moduleName) {
+                            this.buildItem(this.buildObj[key]);
+                        }
+                    }
+                }
+                else {
+                    this.buildItem(this.buildObj[key]);
+                }
+            }
+        }
+    },
     run: function () {
         var  packageObj = require(this.configPath);
         var  buildObj = packageObj.build;
@@ -57,16 +107,8 @@ oojs.define({
             this.buildItem(buildObj[this.target]);
             return;
         }
-        for (var key in buildObj) {
-            // 根据名称里有没有`painter`决定是打包总控还是painter
-            if (key.toLowerCase().indexOf('painter') < 0) {
-                if (key && buildObj[key] && buildObj.hasOwnProperty(key)) {
-                    this.buildItem(buildObj[key]);
-                }
-            } else {
-                this.buildPainter(buildObj[key]);
-            }
-        }
+
+        this.buildSwitch();
     },
     pathMap2ModuleName: function (path) {
         path = path.split("/");
@@ -317,16 +359,9 @@ oojs.define({
         });  
         return true;                        
     },
-    rebuild: function () {
-        for (var  key in this.buildObj) {
-            if (key && this.buildObj[key] && this.buildObj.hasOwnProperty(key)) {
-                if (key.toLowerCase().indexOf('painter') > -1) {
-                    this.buildPainter(this.buildObj[key], true);
-                } else {
-                    this.build4watch(this.buildObj[key]);
-                }
-            }
-        }
+    rebuild: function (modifiedModuleName) {
+        console.log("modifiedModuleName----->", modifiedModuleName);
+        this.buildSwitch(modifiedModuleName);
     },
     reCalculateAllDeps: function () {
         var  importWithDepsRegexp = /\$importAll\((\S+)\)\s*;/gi;
