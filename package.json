@@ -3,7 +3,7 @@
   "description": "oojs utility library",
   "homepage": "https://github.com/zhangziqiu/oojs-utility",
   "main": "./src/module.js",
-  "version": "1.1.21",
+  "version": "1.2.3",
   "engines": {
     "node": ">=0.10.0"
   },

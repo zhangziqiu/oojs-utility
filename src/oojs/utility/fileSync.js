@@ -130,6 +130,18 @@ oojs.define({
         //console.log('copy file finished, source:' + sourceFilePath + ',to:' + toFilePath);
         return this;
     },
+    
+    /**
+     * 写入文件, 会自动递归创建目标文件夹
+     * @param  {string} file 文件名
+     * @param  {string|Buffer} data 待写入的数据
+     * @param  {Object} option 选项
+     */
+    writeFileSync: function(file, data, option){
+        var  dirPath = this.path.dirname(file);
+        this.mkdirSync(dirPath);        
+        this.fs.writeFileSync(file, data, option);
+    },
 
     /**
     创建文件夹, 会自动递归创建目标文件夹

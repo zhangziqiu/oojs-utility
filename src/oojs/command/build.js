@@ -176,12 +176,12 @@ oojs.define({
         }
 
         for (var i = 0; i < sourceFilePath.length; i++) {
-            this.fs.writeFileSync(sourceFilePath[i], ';(function(oojs) {' + sourceStr + '})(_dup_global.oojs);');
+            this.fileSync.writeFileSync(sourceFilePath[i], ';(function(oojs) {' + sourceStr + '})(_dup_global.oojs);');
         }        
         console.log(moduleName, 'source build successfully');
         
         for (var i = 0; i < formatFilePath.length; i++) {
-            this.fs.writeFileSync(formatFilePath[i], ';(function(oojs) {' + formatStr + '})(_dup_global.oojs);');
+            this.fileSync.writeFileSync(formatFilePath[i], ';(function(oojs) {' + formatStr + '})(_dup_global.oojs);');
         }
         console.log(moduleName, 'format build successfully');
 
@@ -192,7 +192,7 @@ oojs.define({
         
         for (var i = 0; i < compressFilePath.length; i++) {
             var compressStr = this.jsHelper.compressSync(formatStr);
-            this.fs.writeFileSync(compressFilePath[i], ';(function(oojs) {' + compressStr + '})(_dup_global.oojs);');
+            this.fileSync.writeFileSync(compressFilePath[i], ';(function(oojs) {' + compressStr + '})(_dup_global.oojs);');
         }
         console.log(moduleName, 'compress build successfully');
 
@@ -446,7 +446,7 @@ oojs.define({
 
         for (var  i = 0, count = filePathArr.length; i < count; i++) {
             var  tempFilePath = filePathArr[i];
-            this.fs.writeFileSync(tempFilePath, totalStr);
+            this.fileSync.writeFileSync(tempFilePath, totalStr);
         }
 
         return totalStr;
@@ -461,7 +461,7 @@ oojs.define({
         var compressStr = this.jsHelper.compressSync(unCompressStr);
         for (var  i = 0, count = filePathArr.length; i < count; i++) {
             var  tempFilePath = filePathArr[i];
-            this.fs.writeFileSync(tempFilePath, compressStr);
+            this.fileSync.writeFileSync(tempFilePath, compressStr);
         }
         return compressStr;
     },
